@@ -23,6 +23,7 @@ namespace CoreBreach.Editor
         {
             EnsureFolder("Assets/ScriptableObjects");
             EnsureFolder("Assets/Prefabs");
+            EnsureFolder("Assets/Scenes");
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             Physics2D.gravity = Vector2.zero;
