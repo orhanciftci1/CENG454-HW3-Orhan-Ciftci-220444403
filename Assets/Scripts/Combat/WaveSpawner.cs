@@ -58,6 +58,7 @@ namespace CoreBreach.Combat
             Transform point = spawnPoints[spawned % spawnPoints.Length];
             EnemyUnit enemy = Instantiate(prefab, point.position, Quaternion.identity);
             enemy.Configure(core.transform);
+            enemy.gameObject.SetActive(true);
             enemy.OnEnemyKilled += HandleEnemyKilled;
             spawned++;
             alive++;

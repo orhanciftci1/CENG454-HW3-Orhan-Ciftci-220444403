@@ -1,5 +1,8 @@
 using CoreBreach.Core;
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace CoreBreach.Combat
 {
@@ -49,7 +52,7 @@ namespace CoreBreach.Combat
 
         private void Update()
         {
-            if (IsGameOver && Input.GetKeyDown(KeyCode.R))
+            if (IsGameOver && RetryPressed())
             {
                 UnityEngine.SceneManagement.SceneManager.LoadScene(
                     UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
@@ -71,6 +74,17 @@ namespace CoreBreach.Combat
         private void OnDestroy()
         {
             Time.timeScale = 1f;
+        }
+
+        private static bool RetryPressed()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current != null)
+            {
+                return Keyboard.current.rKey.wasPressedThisFrame;
+            }
+#endif
+            return Input.GetKeyDown(KeyCode.R);
         }
     }
 }

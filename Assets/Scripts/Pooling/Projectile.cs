@@ -1,3 +1,4 @@
+using CoreBreach.Core;
 using CoreBreach.Interfaces;
 using UnityEngine;
 
@@ -47,12 +48,17 @@ namespace CoreBreach.Pooling
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (other.gameObject.layer == ownerLayer)
+            if (ownerLayer > 0 && other.gameObject.layer == ownerLayer)
             {
                 return;
             }
 
             if ((damageMask.value & (1 << other.gameObject.layer)) == 0)
+            {
+                return;
+            }
+
+            if (other.TryGetComponent(out CoreHealth _))
             {
                 return;
             }

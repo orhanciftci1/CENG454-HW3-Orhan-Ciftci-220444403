@@ -18,6 +18,25 @@ namespace CoreBreach.Editor
     {
         private const string ScenePath = "Assets/Scenes/CoreBreachPrototype.unity";
 
+        [InitializeOnLoadMethod]
+        private static void BuildSceneOnceAfterImport()
+        {
+            EditorApplication.delayCall += () =>
+            {
+                if (EditorApplication.isPlayingOrWillChangePlaymode)
+                {
+                    return;
+                }
+
+                if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) != null)
+                {
+                    return;
+                }
+
+                BuildPrototypeScene();
+            };
+        }
+
         [MenuItem("Tools/Core Breach/Build Prototype Scene")]
         public static void BuildPrototypeScene()
         {

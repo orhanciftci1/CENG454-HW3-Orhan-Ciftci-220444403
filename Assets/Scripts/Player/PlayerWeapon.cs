@@ -1,6 +1,9 @@
 using CoreBreach.Pooling;
 using CoreBreach.Strategies;
 using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace CoreBreach.Player
 {
@@ -28,20 +31,20 @@ namespace CoreBreach.Player
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1))
+            if (WasPressedThisFrame(KeyCode.Alpha1))
             {
                 activeWeapon = primaryWeapon;
             }
-            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            else if (WasPressedThisFrame(KeyCode.Alpha2))
             {
                 activeWeapon = alternateWeapon;
             }
-            else if (Input.GetKeyDown(KeyCode.Q) && boostedWeapon != null)
+            else if (WasPressedThisFrame(KeyCode.Q) && boostedWeapon != null)
             {
                 activeWeapon = boostedWeapon;
             }
 
-            if (Input.GetMouseButton(0))
+            if (IsFireHeld())
             {
                 TryFire();
             }
@@ -56,6 +59,34 @@ namespace CoreBreach.Player
 
             activeWeapon.Fire(muzzle, projectilePool, gameObject.layer, 1f);
             nextFireTime = Time.time + activeWeapon.Cooldown;
+        }
+
+        private static bool WasPressedThisFrame(KeyCode key)
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Keyboard.current != null)
+            {
+                return key switch
+                {
+                    KeyCode.Alpha1 => Keyboard.current.digit1Key.wasPressedThisFrame,
+                    KeyCode.Alpha2 => Keyboard.current.digit2Key.wasPressedThisFrame,
+                    KeyCode.Q => Keyboard.current.qKey.wasPressedThisFrame,
+                    _ => false
+                };
+            }
+#endif
+            return Input.GetKeyDown(key);
+        }
+
+        private static bool IsFireHeld()
+        {
+#if ENABLE_INPUT_SYSTEM
+            if (Mouse.current != null)
+            {
+                return Mouse.current.leftButton.isPressed;
+            }
+#endif
+            return Input.GetMouseButton(0);
         }
     }
 }
