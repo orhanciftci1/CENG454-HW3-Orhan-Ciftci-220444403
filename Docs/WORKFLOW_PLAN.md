@@ -35,3 +35,7 @@ Use this to satisfy the traceability requirement. Do the work in small commits e
    - Commit: `Add report draft and screenshot checklist`
 
 Do not make one single final commit. The assignment warns that this can raise a plagiarism flag.
+
+## Screenshot Capture Order
+
+Capture gameplay first, then code evidence, then GitHub evidence. This keeps the report easy to assemble in the same order as the homework sheet.
