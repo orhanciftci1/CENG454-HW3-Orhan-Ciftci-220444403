@@ -15,3 +15,4 @@
 *.pdb
 *.mdb
 unity-compile.log
+mono_crash.*.json

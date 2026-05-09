@@ -49,7 +49,7 @@ namespace CoreBreach
             Camera camera = cameraObject.AddComponent<Camera>();
             camera.tag = "MainCamera";
             camera.orthographic = true;
-            camera.orthographicSize = 7.5f;
+            camera.orthographicSize = 5.4f;
             camera.backgroundColor = new Color(0.05f, 0.07f, 0.08f);
             return camera;
         }
@@ -58,7 +58,7 @@ namespace CoreBreach
         {
             GameObject coreObject = new("Energy Core");
             coreObject.transform.position = Vector3.zero;
-            coreObject.transform.localScale = Vector3.one * 1.4f;
+            coreObject.transform.localScale = Vector3.one * 2.0f;
             SpriteRenderer renderer = coreObject.AddComponent<SpriteRenderer>();
             renderer.sprite = SquareSprite();
             renderer.color = new Color(0.25f, 0.95f, 1f);
@@ -75,7 +75,7 @@ namespace CoreBreach
         {
             GameObject projectileObject = new("Player Projectile Template");
             projectileObject.SetActive(false);
-            projectileObject.transform.localScale = new Vector3(0.35f, 0.12f, 1f);
+            projectileObject.transform.localScale = new Vector3(0.55f, 0.18f, 1f);
             SpriteRenderer renderer = projectileObject.AddComponent<SpriteRenderer>();
             renderer.sprite = SquareSprite();
             renderer.color = new Color(1f, 0.88f, 0.28f);
@@ -130,7 +130,7 @@ namespace CoreBreach
         {
             GameObject player = new("Defender");
             player.transform.position = new Vector3(0f, -3.3f, 0f);
-            player.transform.localScale = new Vector3(0.8f, 0.55f, 1f);
+            player.transform.localScale = new Vector3(1.25f, 0.85f, 1f);
             SpriteRenderer renderer = player.AddComponent<SpriteRenderer>();
             renderer.sprite = SquareSprite();
             renderer.color = Color.white;
@@ -142,7 +142,7 @@ namespace CoreBreach
 
             GameObject muzzle = new("Muzzle");
             muzzle.transform.SetParent(player.transform);
-            muzzle.transform.localPosition = new Vector3(0.65f, 0f, 0f);
+            muzzle.transform.localPosition = new Vector3(0.9f, 0f, 0f);
 
             PlayerWeapon weapon = player.AddComponent<PlayerWeapon>();
             SetField(weapon, "muzzle", muzzle.transform);
@@ -157,7 +157,7 @@ namespace CoreBreach
         {
             GameObject enemy = new(name);
             enemy.SetActive(false);
-            enemy.transform.localScale = direct ? Vector3.one * 0.62f : new Vector3(0.78f, 0.44f, 1f);
+            enemy.transform.localScale = direct ? Vector3.one * 1.0f : new Vector3(1.15f, 0.75f, 1f);
             SpriteRenderer renderer = enemy.AddComponent<SpriteRenderer>();
             renderer.sprite = SquareSprite();
             renderer.color = direct ? new Color(1f, 0.35f, 0.28f) : new Color(1f, 0.62f, 0.18f);
@@ -177,11 +177,11 @@ namespace CoreBreach
         {
             Vector3[] positions =
             {
-                new(-8.5f, 4.5f, 0f),
-                new(8.5f, 4.2f, 0f),
-                new(-8.5f, -4.2f, 0f),
-                new(8.5f, -4.5f, 0f),
-                new(0f, 6.5f, 0f)
+                new(-6.3f, 3.7f, 0f),
+                new(6.3f, 3.5f, 0f),
+                new(-6.3f, -3.5f, 0f),
+                new(6.3f, -3.7f, 0f),
+                new(0f, 5.0f, 0f)
             };
             Transform[] points = new Transform[positions.Length];
             GameObject root = new("Spawn Points");
@@ -249,10 +249,10 @@ namespace CoreBreach
 
         private static void CreateArenaBounds()
         {
-            CreateWall("North Wall", new Vector2(0f, 6.9f), new Vector2(18f, 0.2f));
-            CreateWall("South Wall", new Vector2(0f, -6.9f), new Vector2(18f, 0.2f));
-            CreateWall("West Wall", new Vector2(-9.2f, 0f), new Vector2(0.2f, 14f));
-            CreateWall("East Wall", new Vector2(9.2f, 0f), new Vector2(0.2f, 14f));
+            CreateWall("North Wall", new Vector2(0f, 5.25f), new Vector2(13.6f, 0.25f));
+            CreateWall("South Wall", new Vector2(0f, -5.25f), new Vector2(13.6f, 0.25f));
+            CreateWall("West Wall", new Vector2(-6.9f, 0f), new Vector2(0.25f, 10.6f));
+            CreateWall("East Wall", new Vector2(6.9f, 0f), new Vector2(0.25f, 10.6f));
         }
 
         private static void CreateWall(string name, Vector2 position, Vector2 scale)
