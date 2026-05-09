@@ -35,3 +35,7 @@ Use this to satisfy the traceability requirement. Do the work in small commits e
    - Commit: `Add report draft and screenshot checklist`
 
 Do not make one single final commit. The assignment warns that this can raise a plagiarism flag.
+
+## Final Report Check
+
+Before exporting the final PDF, confirm that the cover page contains the public GitHub URL and that all seven required screenshots are inserted in the same order as the assignment sheet.
