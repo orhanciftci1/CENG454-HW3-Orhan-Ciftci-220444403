@@ -26,6 +26,11 @@ CENG454 HW3 prototype: a short defend-the-core action game built around Observer
 - Object Pool: `ProjectilePool` and `Projectile`
 - Decorator: `DamageBoostWeaponDecorator`
 
+## Submission Files
+
+- Main playable scene: `Assets/Scenes/CoreBreachPrototype.unity`
+- Report draft: `Docs/REPORT_DRAFT.md`
+- PDF report template: `Docs/CENG454_HW3_Orhan_Ciftci_220444403_REPORT_TEMPLATE.pdf`
 ## Submission Notes
 
 - Main playable scene: `Assets/Scenes/CoreBreachPrototype.unity`
