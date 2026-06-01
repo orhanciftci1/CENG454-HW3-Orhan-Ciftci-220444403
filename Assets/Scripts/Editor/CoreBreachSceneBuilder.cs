@@ -2,6 +2,7 @@
 using CoreBreach.Combat;
 using CoreBreach.Core;
 using CoreBreach.Enemies;
+using CoreBreach.Pickups;
 using CoreBreach.Player;
 using CoreBreach.Pooling;
 using CoreBreach.Strategies;
@@ -56,14 +57,17 @@ namespace CoreBreach.Editor
             CoreHealth core = CreateCore(objectiveLayer);
             Projectile projectilePrefab = CreateProjectilePrefab(projectileLayer, enemyLayer);
             ProjectilePool pool = CreateProjectilePool(projectilePrefab);
+            RepairPickup repairPickupPrefab = CreateRepairPickupPrefab();
             WeaponAssets weapons = CreateWeaponAssets();
             PlayerWeapon playerWeapon = CreatePlayer(playerLayer, pool, weapons);
             EnemyUnit directPrefab = CreateEnemyPrefab("DirectEnemy", enemyLayer, true);
             EnemyUnit strafePrefab = CreateEnemyPrefab("StrafeEnemy", enemyLayer, false);
             Transform[] spawnPoints = CreateSpawnPoints();
             WaveSpawner spawner = CreateSpawner(core, directPrefab, strafePrefab, spawnPoints);
+            ScoreKeeper scoreKeeper = CreateScoreKeeper(spawner);
+            CreatePickupSpawner(spawner, core, repairPickupPrefab);
             GameStateController gameState = CreateGameState(core, spawner);
-            CreateHud(core, spawner, playerWeapon, gameState, camera);
+            CreateHud(core, spawner, scoreKeeper, playerWeapon, gameState, camera);
             CreateArenaBounds();
 
             Selection.activeObject = core.gameObject;
@@ -130,6 +134,21 @@ namespace CoreBreach.Editor
             SetObjectField(pool, "projectilePrefab", prefab);
             SetIntField(pool, "initialSize", 36);
             return pool;
+        }
+
+        private static RepairPickup CreateRepairPickupPrefab()
+        {
+            GameObject pickupObject = new("RepairPickup");
+            pickupObject.transform.localScale = Vector3.one * 0.55f;
+            SpriteRenderer renderer = pickupObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = CreateSquareSprite();
+            renderer.color = new Color(0.18f, 1f, 0.36f);
+            CircleCollider2D collider = pickupObject.AddComponent<CircleCollider2D>();
+            collider.isTrigger = true;
+            RepairPickup pickup = pickupObject.AddComponent<RepairPickup>();
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(pickupObject, "Assets/Prefabs/RepairPickup.prefab");
+            Object.DestroyImmediate(pickupObject);
+            return prefab.GetComponent<RepairPickup>();
         }
 
         private static WeaponAssets CreateWeaponAssets()
@@ -241,9 +260,30 @@ namespace CoreBreach.Editor
             SetObjectField(spawner, "directEnemyPrefab", directPrefab);
             SetObjectField(spawner, "strafeEnemyPrefab", strafePrefab);
             SetObjectArrayField(spawner, "spawnPoints", spawnPoints);
-            SetIntField(spawner, "totalEnemies", 28);
-            SetFloatField(spawner, "spawnInterval", 2.1f);
+            SetIntField(spawner, "totalWaves", 3);
+            SetIntField(spawner, "enemiesInFirstWave", 8);
+            SetIntField(spawner, "enemiesAddedPerWave", 5);
+            SetFloatField(spawner, "spawnInterval", 1.45f);
+            SetFloatField(spawner, "timeBetweenWaves", 3f);
             return spawner;
+        }
+
+        private static ScoreKeeper CreateScoreKeeper(WaveSpawner spawner)
+        {
+            GameObject scoreObject = new("Score Keeper");
+            ScoreKeeper scoreKeeper = scoreObject.AddComponent<ScoreKeeper>();
+            SetObjectField(scoreKeeper, "waveSpawner", spawner);
+            return scoreKeeper;
+        }
+
+        private static void CreatePickupSpawner(WaveSpawner spawner, CoreHealth core, RepairPickup repairPickupPrefab)
+        {
+            GameObject pickupObject = new("Pickup Spawner");
+            PickupSpawner pickupSpawner = pickupObject.AddComponent<PickupSpawner>();
+            SetObjectField(pickupSpawner, "waveSpawner", spawner);
+            SetObjectField(pickupSpawner, "core", core);
+            SetObjectField(pickupSpawner, "repairPickupPrefab", repairPickupPrefab);
+            SetFloatField(pickupSpawner, "dropChance", 0.28f);
         }
 
         private static GameStateController CreateGameState(CoreHealth core, WaveSpawner spawner)
@@ -255,7 +295,7 @@ namespace CoreBreach.Editor
             return state;
         }
 
-        private static void CreateHud(CoreHealth core, WaveSpawner spawner, PlayerWeapon weapon, GameStateController state, Camera camera)
+        private static void CreateHud(CoreHealth core, WaveSpawner spawner, ScoreKeeper scoreKeeper, PlayerWeapon weapon, GameStateController state, Camera camera)
         {
             GameObject canvasObject = new("HUD Canvas");
             Canvas canvas = canvasObject.AddComponent<Canvas>();
@@ -280,6 +320,7 @@ namespace CoreBreach.Editor
             GameHud hud = canvasObject.AddComponent<GameHud>();
             SetObjectField(hud, "core", core);
             SetObjectField(hud, "waveSpawner", spawner);
+            SetObjectField(hud, "scoreKeeper", scoreKeeper);
             SetObjectField(hud, "playerWeapon", weapon);
             SetObjectField(hud, "gameState", state);
             SetObjectField(hud, "statusText", text);

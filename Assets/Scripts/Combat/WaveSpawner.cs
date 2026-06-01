@@ -12,15 +12,27 @@ namespace CoreBreach.Combat
         [SerializeField] private EnemyUnit strafeEnemyPrefab;
         [SerializeField] private CoreHealth core;
         [SerializeField] private Transform[] spawnPoints;
-        [SerializeField] private int totalEnemies = 28;
-        [SerializeField] private float spawnInterval = 2.2f;
+        [SerializeField] private int totalWaves = 3;
+        [SerializeField] private int enemiesInFirstWave = 8;
+        [SerializeField] private int enemiesAddedPerWave = 5;
+        [SerializeField] private float spawnInterval = 1.45f;
+        [SerializeField] private float timeBetweenWaves = 3f;
 
         public event Action<int> OnEnemyCountChanged;
+        public event Action<int, int> OnWaveChanged;
+        public event Action<int> OnWaveCleared;
+        public event Action<EnemyUnit, int> OnEnemyDefeated;
         public event Action OnWaveCompleted;
 
         private int spawned;
+        private int spawnedThisWave;
+        private int enemiesThisWave;
         private int alive;
+        private int currentWave;
         private bool isRunning;
+
+        public int CurrentWave => currentWave;
+        public int TotalWaves => totalWaves;
 
         private void Start()
         {
@@ -40,11 +52,37 @@ namespace CoreBreach.Combat
 
         private IEnumerator SpawnRoutine()
         {
-            while (spawned < totalEnemies && core != null && core.IsAlive)
+            for (currentWave = 1; currentWave <= totalWaves; currentWave++)
             {
-                SpawnEnemy();
-                yield return new WaitForSeconds(spawnInterval);
+                enemiesThisWave = enemiesInFirstWave + (currentWave - 1) * enemiesAddedPerWave;
+                spawnedThisWave = 0;
+                OnWaveChanged?.Invoke(currentWave, totalWaves);
+
+                while (spawnedThisWave < enemiesThisWave && core != null && core.IsAlive)
+                {
+                    SpawnEnemy();
+                    yield return new WaitForSeconds(spawnInterval);
+                }
+
+                while (alive > 0 && core != null && core.IsAlive)
+                {
+                    yield return null;
+                }
+
+                if (core == null || !core.IsAlive)
+                {
+                    yield break;
+                }
+
+                OnWaveCleared?.Invoke(currentWave);
+
+                if (currentWave < totalWaves)
+                {
+                    yield return new WaitForSeconds(timeBetweenWaves);
+                }
             }
+
+            OnWaveCompleted?.Invoke();
         }
 
         private void SpawnEnemy()
@@ -61,6 +99,7 @@ namespace CoreBreach.Combat
             enemy.gameObject.SetActive(true);
             enemy.OnEnemyKilled += HandleEnemyKilled;
             spawned++;
+            spawnedThisWave++;
             alive++;
             OnEnemyCountChanged?.Invoke(alive);
         }
@@ -70,11 +109,7 @@ namespace CoreBreach.Combat
             enemy.OnEnemyKilled -= HandleEnemyKilled;
             alive--;
             OnEnemyCountChanged?.Invoke(alive);
-
-            if (spawned >= totalEnemies && alive <= 0)
-            {
-                OnWaveCompleted?.Invoke();
-            }
+            OnEnemyDefeated?.Invoke(enemy, enemy.ScoreValue);
         }
     }
 }

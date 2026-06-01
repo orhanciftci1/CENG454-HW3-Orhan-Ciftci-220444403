@@ -2,6 +2,7 @@ using System.Reflection;
 using CoreBreach.Combat;
 using CoreBreach.Core;
 using CoreBreach.Enemies;
+using CoreBreach.Pickups;
 using CoreBreach.Player;
 using CoreBreach.Pooling;
 using CoreBreach.Strategies;
@@ -20,6 +21,7 @@ namespace CoreBreach
         {
             if (Object.FindFirstObjectByType<CoreHealth>() != null)
             {
+                EnhanceExistingScene();
                 return;
             }
 
@@ -36,11 +38,49 @@ namespace CoreBreach
             EnemyUnit strafeEnemy = CreateEnemyTemplate("Strafe Enemy Template", false);
             Transform[] spawnPoints = CreateSpawnPoints();
             WaveSpawner waveSpawner = CreateSpawner(core, directEnemy, strafeEnemy, spawnPoints);
+            ScoreKeeper scoreKeeper = CreateScoreKeeper(waveSpawner);
+            CreatePickupSpawner(waveSpawner, core);
             GameStateController gameState = CreateGameState(core, waveSpawner);
-            CreateHud(core, waveSpawner, playerWeapon, gameState);
+            CreateHud(core, waveSpawner, scoreKeeper, playerWeapon, gameState);
             CreateArenaBounds();
 
             camera.transform.position = new Vector3(0f, 0f, -10f);
+        }
+
+        private static void EnhanceExistingScene()
+        {
+            CoreHealth core = Object.FindFirstObjectByType<CoreHealth>();
+            WaveSpawner waveSpawner = Object.FindFirstObjectByType<WaveSpawner>();
+            PlayerWeapon playerWeapon = Object.FindFirstObjectByType<PlayerWeapon>();
+            GameStateController gameState = Object.FindFirstObjectByType<GameStateController>();
+            GameHud hud = Object.FindFirstObjectByType<GameHud>();
+
+            if (core == null || waveSpawner == null)
+            {
+                return;
+            }
+
+            ScoreKeeper scoreKeeper = Object.FindFirstObjectByType<ScoreKeeper>();
+            if (scoreKeeper == null)
+            {
+                scoreKeeper = CreateScoreKeeper(waveSpawner);
+            }
+
+            if (Object.FindFirstObjectByType<PickupSpawner>() == null)
+            {
+                CreatePickupSpawner(waveSpawner, core);
+            }
+
+            if (hud != null)
+            {
+                hud.enabled = false;
+                SetField(hud, "core", core);
+                SetField(hud, "waveSpawner", waveSpawner);
+                SetField(hud, "scoreKeeper", scoreKeeper);
+                SetField(hud, "playerWeapon", playerWeapon);
+                SetField(hud, "gameState", gameState);
+                hud.enabled = true;
+            }
         }
 
         private static Camera CreateCamera()
@@ -203,23 +243,66 @@ namespace CoreBreach
             SetField(spawner, "directEnemyPrefab", directEnemy);
             SetField(spawner, "strafeEnemyPrefab", strafeEnemy);
             SetField(spawner, "spawnPoints", spawnPoints);
-            SetField(spawner, "totalEnemies", 28);
-            SetField(spawner, "spawnInterval", 2.1f);
+            SetField(spawner, "totalWaves", 3);
+            SetField(spawner, "enemiesInFirstWave", 8);
+            SetField(spawner, "enemiesAddedPerWave", 5);
+            SetField(spawner, "spawnInterval", 1.45f);
+            SetField(spawner, "timeBetweenWaves", 3f);
             return spawner;
+        }
+
+        private static ScoreKeeper CreateScoreKeeper(WaveSpawner waveSpawner)
+        {
+            GameObject scoreObject = new("Score Keeper");
+            scoreObject.SetActive(false);
+            ScoreKeeper scoreKeeper = scoreObject.AddComponent<ScoreKeeper>();
+            SetField(scoreKeeper, "waveSpawner", waveSpawner);
+            scoreObject.SetActive(true);
+            return scoreKeeper;
+        }
+
+        private static void CreatePickupSpawner(WaveSpawner waveSpawner, CoreHealth core)
+        {
+            GameObject pickupObject = new("Pickup Spawner");
+            pickupObject.SetActive(false);
+            PickupSpawner pickupSpawner = pickupObject.AddComponent<PickupSpawner>();
+            SetField(pickupSpawner, "waveSpawner", waveSpawner);
+            SetField(pickupSpawner, "core", core);
+            SetField(pickupSpawner, "repairPickupPrefab", CreateRepairPickupTemplate(core));
+            SetField(pickupSpawner, "dropChance", 0.28f);
+            pickupObject.SetActive(true);
+        }
+
+        private static RepairPickup CreateRepairPickupTemplate(CoreHealth core)
+        {
+            GameObject pickup = new("Repair Pickup Template");
+            pickup.SetActive(false);
+            pickup.transform.localScale = Vector3.one * 0.55f;
+            SpriteRenderer renderer = pickup.AddComponent<SpriteRenderer>();
+            renderer.sprite = SquareSprite();
+            renderer.color = new Color(0.18f, 1f, 0.36f);
+            CircleCollider2D collider = pickup.AddComponent<CircleCollider2D>();
+            collider.isTrigger = true;
+            RepairPickup repairPickup = pickup.AddComponent<RepairPickup>();
+            repairPickup.Configure(core);
+            return repairPickup;
         }
 
         private static GameStateController CreateGameState(CoreHealth core, WaveSpawner waveSpawner)
         {
             GameObject stateObject = new("Game State");
+            stateObject.SetActive(false);
             GameStateController state = stateObject.AddComponent<GameStateController>();
             SetField(state, "core", core);
             SetField(state, "waveSpawner", waveSpawner);
+            stateObject.SetActive(true);
             return state;
         }
 
-        private static void CreateHud(CoreHealth core, WaveSpawner waveSpawner, PlayerWeapon playerWeapon, GameStateController gameState)
+        private static void CreateHud(CoreHealth core, WaveSpawner waveSpawner, ScoreKeeper scoreKeeper, PlayerWeapon playerWeapon, GameStateController gameState)
         {
             GameObject canvasObject = new("HUD Canvas");
+            canvasObject.SetActive(false);
             Canvas canvas = canvasObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvasObject.AddComponent<CanvasScaler>();
@@ -242,9 +325,11 @@ namespace CoreBreach
             GameHud hud = canvasObject.AddComponent<GameHud>();
             SetField(hud, "core", core);
             SetField(hud, "waveSpawner", waveSpawner);
+            SetField(hud, "scoreKeeper", scoreKeeper);
             SetField(hud, "playerWeapon", playerWeapon);
             SetField(hud, "gameState", gameState);
             SetField(hud, "statusText", text);
+            canvasObject.SetActive(true);
         }
 
         private static void CreateArenaBounds()

@@ -11,6 +11,7 @@ namespace CoreBreach.Enemies
         [SerializeField] private float moveSpeed = 2.1f;
         [SerializeField] private float contactDamage = 10f;
         [SerializeField] private float attackCooldown = 0.8f;
+        [SerializeField] private int scoreValue = 100;
         [SerializeField] private MonoBehaviour movementStrategyComponent;
 
         public event Action<EnemyUnit> OnEnemyKilled;
@@ -24,6 +25,7 @@ namespace CoreBreach.Enemies
         public bool IsAlive => currentHealth > 0f;
         public Transform Target { get; private set; }
         public float MoveSpeed => moveSpeed;
+        public int ScoreValue => scoreValue;
 
         private void Awake()
         {

@@ -43,5 +43,16 @@ namespace CoreBreach.Core
                 OnCoreDestroyed?.Invoke();
             }
         }
+
+        public void Heal(float amount)
+        {
+            if (!IsAlive)
+            {
+                return;
+            }
+
+            currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        }
     }
 }
